@@ -2,9 +2,9 @@ name: TODO-API-NODE CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   docker-build-and-test:
