@@ -111,7 +111,7 @@ function toArray(rows) {
 }
 
 function formatTodo(todo) {
-  var tmp = {};
+  const tmp = {};
   tmp["id"] = todo.id;
   tmp["title"] = todo.title;
   tmp["description"] = todo.description;
@@ -120,9 +120,9 @@ function formatTodo(todo) {
 }
 
 function formatTodos(todos) {
-  var tmp = [];
-  for (var i = 0; i < todos.length; i++) {
-    var data = {};
+  const tmp = [];
+  for (let i = 0; i < todos.length; i++) {
+    const data = {};
     data["id"] = todos[i].id;
     data["title"] = todos[i].title;
     data["description"] = todos[i].description;

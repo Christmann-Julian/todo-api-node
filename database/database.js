@@ -3,7 +3,6 @@ const fs = require("fs");
 const path = require("path");
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, "..", "todo.db");
-const DB_PASSWORD = process.env.DB_PASSWORD;
 
 let db;
 
