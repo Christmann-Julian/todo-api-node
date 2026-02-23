@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  todo-app:
+    build: .
+    container_name: express-todo-dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - todo-data:/app/data
+    command: npm run dev
+  sqlite-web:
+    image: coleifer/sqlite-web
+    container_name: express-todo-sqlite-admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - todo-data:/data
+    command: sh -c "touch /data/todo-local.db && sqlite_web -H 0.0.0.0 /data/todo-local.db"
+    profiles:
+      - dev
+
+volumes:
+  todo-data:

@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  todo-app:
+    container_name: express-todo-prod
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - todo-data:/app/data
+    command: npm start
