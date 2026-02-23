@@ -12,13 +12,13 @@ app.get("/", (_req, res) => {
 
 app.get("/debug", (_req, res) => {
   if (process.env.NODE_ENV !== "development") {
-    return res.status(404).json({ error: "Not found" }); 
+    return res.status(404).json({ error: "Not found" });
   }
 
-  res.json({ 
-    secret: process.env.SECRET_KEY, 
-    api_key: process.env.API_KEY, 
-    env: process.env 
+  res.json({
+    secret: process.env.SECRET_KEY,
+    api_key: process.env.API_KEY,
+    env: process.env,
   });
 });
 
