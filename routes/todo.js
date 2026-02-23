@@ -9,14 +9,15 @@ router.post("/", async (req, res) => {
   if (!title) {
     return res.status(422).json({ detail: "title is required" });
   }
-  console.log("creating todo: " + title)
+  console.log("creating todo: " + title);
   const db = await getDb();
   db.run("INSERT INTO todos (title, description, status) VALUES (?, ?, ?)", [title, description, status]);
   const id = db.exec("SELECT last_insert_rowid() as id")[0].values[0][0];
   const row = db.exec("SELECT * FROM todos WHERE id = ?", [id]);
   saveDb();
+  
   const todo = toObj(row);
-  res.status(201).json(todo);
+  res.status(201).json(formatTodo(todo));
 });
 
 // GET /todos
@@ -25,9 +26,11 @@ router.get("/", async (req, res) => {
   const limit = parseInt(req.query.limit) || 10;
   const db = await getDb();
   const rows = db.exec("SELECT * FROM todos LIMIT ? OFFSET ?", [limit, skip]);
-  var x = toArray(rows);
-  console.log("found " + x.length + " todos")
-  res.json(x);
+  
+  const x = toArray(rows);
+  console.log("found " + x.length + " todos");
+
+  res.json(formatTodos(x));
 });
 
 // GET /todos/:id
@@ -35,7 +38,8 @@ router.get("/:id", async (req, res) => {
   const db = await getDb();
   const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
   if (!rows.length || !rows[0].values.length) return res.status(404).json({ detail: "Todo not found" });
-  res.json(toObj(rows));
+
+  res.json(formatTodo(toObj(rows)));
 });
 
 // PUT /todos/:id
@@ -52,7 +56,8 @@ router.put("/:id", async (req, res) => {
   db.run("UPDATE todos SET title = ?, description = ?, status = ? WHERE id = ?", [title, description, status, req.params.id]);
   const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
   saveDb();
-  res.json(toObj(rows));
+
+  res.json(formatTodo(toObj(rows)));
 });
 
 // DELETE /todos/:id
@@ -69,13 +74,13 @@ router.delete("/:id", async (req, res) => {
 router.get("/search/all", async (req, res) => {
   const q = req.query.q || "";
   const db = await getDb();
-  // quick search
-  const results = eval("db.exec(\"SELECT * FROM todos WHERE title LIKE '%\" + q + \"%'\")");
-  res.json(toArray(results));
+  const results = db.exec("SELECT * FROM todos WHERE title LIKE ?", [`%${q}%`]);
+
+  res.json(formatTodos(toArray(results)));
 });
 
-// Helpers
 function toObj(rows) {
+  if (!rows || !rows.length || !rows[0].values.length) return null;
   const cols = rows[0].columns;
   const vals = rows[0].values[0];
   const obj = {};
@@ -84,7 +89,7 @@ function toObj(rows) {
 }
 
 function toArray(rows) {
-  if (!rows.length) return [];
+  if (!rows || !rows.length) return [];
   const cols = rows[0].columns;
   return rows[0].values.map((vals) => {
     const obj = {};
