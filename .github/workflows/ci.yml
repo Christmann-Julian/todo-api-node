@@ -50,6 +50,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Set image name (lowercase)
+        id: img
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
 
       - name: Build and push (latest + sha)
         uses: docker/build-push-action@v6
@@ -57,5 +61,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ${{ steps.img.outputs.IMAGE }}:latest
+            ${{ steps.img.outputs.IMAGE }}:${{ github.sha }}
