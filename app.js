@@ -29,9 +29,23 @@ app.get("/", (_req, res) => {
 /**
  * Configuration de Swagger UI pour la documentation de l'API.
  */
-const swaggerPath = path.join(__dirname, "docs", "swagger.yml");
-const swaggerDocument = YAML.load(swaggerPath);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+try {
+  const swaggerPath = path.join(__dirname, "docs", "swagger.yml");
+  const swaggerDocument = YAML.load(swaggerPath);
+
+  // Options pour forcer le chargement du design via CDN (Vercel)
+  const swaggerOptions = {
+    customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.31.3/swagger-ui.min.css",
+    customJs: [
+      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.31.3/swagger-ui-bundle.js",
+      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.31.3/swagger-ui-standalone-preset.js",
+    ],
+  };
+
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
+} catch (error) {
+  console.error("Impossible de charger la documentation Swagger :", error.message);
+}
 
 /**
  * Route de débogage pour afficher les variables d'environnement.
