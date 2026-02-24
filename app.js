@@ -2,6 +2,7 @@ if (process.env.VERCEL !== "1") {
   require("dotenv").config();
 }
 const express = require("express");
+const path = require("path");
 const todoRouter = require("./routes/todo");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
@@ -28,7 +29,8 @@ app.get("/", (_req, res) => {
 /**
  * Configuration de Swagger UI pour la documentation de l'API.
  */
-const swaggerDocument = YAML.load("./docs/swagger.yml");
+const swaggerPath = path.join(__dirname, "docs", "swagger.yml");
+const swaggerDocument = YAML.load(swaggerPath);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 /**
