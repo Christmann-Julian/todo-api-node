@@ -1,4 +1,6 @@
-require("dotenv").config();
+if (process.env.VERCEL !== "1") {
+  require("dotenv").config();
+}
 const express = require("express");
 const todoRouter = require("./routes/todo");
 
@@ -48,7 +50,7 @@ app.get("/debug", (_req, res) => {
 app.use("/todos", todoRouter);
 
 /* istanbul ignore next */
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NODE_ENV !== "test" && process.env.VERCEL !== "1") {
   app.listen(process.env.PORT || 3000, () =>
     console.log(`Server running on http://localhost:${process.env.PORT || 3000}`)
   );
