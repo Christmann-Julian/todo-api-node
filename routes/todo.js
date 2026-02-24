@@ -2,9 +2,22 @@ const { Router } = require("express");
 const { getDb, saveDb } = require("../database/database");
 const { formatTodo, formatTodos, toArray } = require("./utils");
 
+/**
+ * Routeur Express pour la gestion des Todos.
+ * @type {import('express').Router}
+ */
 const router = Router();
 
-// POST /todos
+/**
+ * Crée un nouveau Todo.
+ * @name POST /todos
+ * @param {import('express').Request} req - La requête Express
+ * @param {string} req.body.title - Le titre du Todo (Requis)
+ * @param {string} [req.body.description] - La description du Todo (Optionnel)
+ * @param {string} [req.body.status="pending"] - Le statut du Todo (Optionnel)
+ * @param {import('express').Response} res - La réponse Express
+ * @returns {Object} Le Todo formaté avec son nouvel ID (Statut 201) ou une erreur 422
+ */
 router.post("/", async (req, res) => {
   const { title, description = null, status = "pending" } = req.body;
   if (!title) {
@@ -25,7 +38,15 @@ router.post("/", async (req, res) => {
   res.status(201).json(formatTodo(todo));
 });
 
-// GET /todos
+/**
+ * Récupère une liste paginée de Todos.
+ * @name GET /todos
+ * @param {import('express').Request} req - La requête Express
+ * @param {string} [req.query.skip=0] - Nombre d'éléments à ignorer pour la pagination
+ * @param {string} [req.query.limit=10] - Nombre maximum d'éléments à retourner
+ * @param {import('express').Response} res - La réponse Express
+ * @returns {Array<Object>} Un tableau de Todos formatés
+ */
 router.get("/", async (req, res) => {
   const skip = parseInt(req.query.skip) || 0;
   const limit = parseInt(req.query.limit) || 10;
@@ -38,7 +59,14 @@ router.get("/", async (req, res) => {
   res.json(formatTodos(x));
 });
 
-// GET /todos/:id
+/**
+ * Récupère un Todo spécifique par son ID.
+ * @name GET /todos/:id
+ * @param {import('express').Request} req - La requête Express
+ * @param {string} req.params.id - L'identifiant unique du Todo
+ * @param {import('express').Response} res - La réponse Express
+ * @returns {Object} Le Todo formaté ou une erreur 404 s'il est introuvable
+ */
 router.get("/:id", async (req, res) => {
   const db = await getDb();
   const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
@@ -48,7 +76,17 @@ router.get("/:id", async (req, res) => {
   res.json(formatTodo(toObj(rows)));
 });
 
-// PUT /todos/:id
+/**
+ * Met à jour un Todo existant (Mise à jour partielle supportée).
+ * @name PUT /todos/:id
+ * @param {import('express').Request} req - La requête Express
+ * @param {string} req.params.id - L'identifiant unique du Todo à modifier
+ * @param {string} [req.body.title] - Le nouveau titre
+ * @param {string} [req.body.description] - La nouvelle description
+ * @param {string} [req.body.status] - Le nouveau statut
+ * @param {import('express').Response} res - La réponse Express
+ * @returns {Object} Le Todo mis à jour et formaté ou une erreur 404
+ */
 router.put("/:id", async (req, res) => {
   const db = await getDb();
   const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
@@ -72,7 +110,14 @@ router.put("/:id", async (req, res) => {
   res.json(formatTodo(toObj(rows)));
 });
 
-// DELETE /todos/:id
+/**
+ * Supprime un Todo spécifique.
+ * @name DELETE /todos/:id
+ * @param {import('express').Request} req - La requête Express
+ * @param {string} req.params.id - L'identifiant unique du Todo à supprimer
+ * @param {import('express').Response} res - La réponse Express
+ * @returns {Object} Un message de confirmation ou une erreur 404
+ */
 router.delete("/:id", async (req, res) => {
   const db = await getDb();
   const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
@@ -83,7 +128,14 @@ router.delete("/:id", async (req, res) => {
   res.json({ detail: "Todo deleted" });
 });
 
-// search endpoint
+/**
+ * Recherche des Todos par mot-clé dans le titre.
+ * @name GET /todos/search/all
+ * @param {import('express').Request} req - La requête Express
+ * @param {string} [req.query.q=""] - La chaîne de caractères à rechercher dans le titre
+ * @param {import('express').Response} res - La réponse Express
+ * @returns {Array<Object>} Un tableau de Todos correspondants à la recherche
+ */
 router.get("/search/all", async (req, res) => {
   const q = req.query.q || "";
   const db = await getDb();
@@ -92,6 +144,11 @@ router.get("/search/all", async (req, res) => {
   res.json(formatTodos(toArray(results)));
 });
 
+/**
+ * Convertit un résultat brut retourné par sql.js en un objet JavaScript standard.
+ * @param {Array<Object>} rows - Le tableau de résultats bruts de sql.js (contenant `columns` et `values`)
+ * @returns {Object|null} L'objet mappé {colonne: valeur} ou null si les données sont invalides/vides
+ */
 function toObj(rows) {
   if (!rows || !rows.length || !rows[0].values.length) return null;
   const cols = rows[0].columns;
