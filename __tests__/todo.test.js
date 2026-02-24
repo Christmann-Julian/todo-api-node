@@ -58,6 +58,12 @@ describe("Tests Fonctionnels de l'API Todo", () => {
     expect(res.body.length).toBeGreaterThan(0);
   });
 
+  it("GET /todos - devrait gérer la pagination avec skip et limit", async () => {
+    const res = await request(app).get("/todos?skip=0&limit=5");
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBeTruthy();
+  });
+
   it("PUT /todos/:id - devrait mettre à jour le todo", async () => {
     const res = await request(app).put(`/todos/${createdTodoId}`).send({
       status: "done",
@@ -68,6 +74,25 @@ describe("Tests Fonctionnels de l'API Todo", () => {
     expect(res.body.status).toBe("done");
   });
 
+  it("PUT /todos/:id - devrait retourner 404 pour un todo inexistant", async () => {
+    const res = await request(app).put("/todos/999999").send({ status: "done" });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("PUT /todos/:id - devrait mettre à jour le titre et la description", async () => {
+    const postRes = await request(app).post("/todos").send({ title: "Vieux Titre" });
+    const tempId = postRes.body.id;
+
+    const putRes = await request(app).put(`/todos/${tempId}`).send({
+      title: "Nouveau Titre",
+      description: "Nouvelle Description",
+    });
+
+    expect(putRes.statusCode).toBe(200);
+    expect(putRes.body.title).toBe("Nouveau Titre");
+    expect(putRes.body.description).toBe("Nouvelle Description");
+  });
+
   it("DELETE /todos/:id - devrait supprimer le todo", async () => {
     const res = await request(app).delete(`/todos/${createdTodoId}`);
 
@@ -75,9 +100,24 @@ describe("Tests Fonctionnels de l'API Todo", () => {
     expect(res.body.detail).toBe("Todo deleted");
   });
 
+  it("DELETE /todos/:id - devrait retourner 404 pour un todo inexistant", async () => {
+    const res = await request(app).delete("/todos/999999");
+    expect(res.statusCode).toBe(404);
+  });
+
   it("GET /todos/:id - devrait retourner 404 pour un todo supprimé", async () => {
     const res = await request(app).get(`/todos/${createdTodoId}`);
     expect(res.statusCode).toBe(404);
+  });
+
+  it("GET /todos/:id - devrait retourner un todo existant", async () => {
+    const postRes = await request(app).post("/todos").send({ title: "Test GET ID" });
+    const tempId = postRes.body.id;
+
+    const res = await request(app).get(`/todos/${tempId}`);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe(tempId);
+    expect(res.body.title).toBe("Test GET ID");
   });
 
   it("doit retourner les todos correspondants à la recherche", async () => {
