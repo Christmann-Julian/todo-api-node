@@ -35,10 +35,10 @@ try {
 
   // Options pour forcer le chargement du design via CDN (Vercel)
   const swaggerOptions = {
-    customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.31.3/swagger-ui.min.css",
+    customCssUrl: "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui.css",
     customJs: [
-      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.31.3/swagger-ui-bundle.js",
-      "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.31.3/swagger-ui-standalone-preset.js",
+      "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-bundle.js",
+      "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js",
     ],
   };
 
