@@ -25,8 +25,9 @@ app.get("/debug", (_req, res) => {
 app.use("/todos", todoRouter);
 
 if (process.env.NODE_ENV !== "test") {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  app.listen(process.env.PORT || 3000, () =>
+    console.log(`Server running on http://localhost:${process.env.PORT || 3000}`)
+  );
 }
 
 module.exports = app;

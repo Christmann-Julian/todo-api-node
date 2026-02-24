@@ -8,7 +8,7 @@
     "dev": "node --watch app.js",
     "format": "prettier --write .",
     "lint": "eslint .",
-    "test": "NODE_ENV=test jest"
+    "test": "NODE_ENV=test jest --coverage"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
@@ -28,5 +28,22 @@
     "glob": "^11.0.0",
     "minimatch": "^10.2.1",
     "braces": "^3.0.3"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    },
+    "collectCoverageFrom": [
+      "routes/*.js",
+      "utils/*.js",
+      "app.js",
+      "!**/node_modules/**"
+    ]
   }
 }
