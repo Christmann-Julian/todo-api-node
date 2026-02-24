@@ -1,6 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const todoRouter = require("./routes/todo");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
 
 /**
  * Instance principale de l'application Express.
@@ -20,6 +22,12 @@ app.get("/", (_req, res) => {
   console.log("someone hit the root endpoint");
   res.json({ message: "Welcome to the Enhanced Express Todo App!" });
 });
+
+/**
+ * Configuration de Swagger UI pour la documentation de l'API.
+ */
+const swaggerDocument = YAML.load("./docs/swagger.yml");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 /**
  * Route de débogage pour afficher les variables d'environnement.

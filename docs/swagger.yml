@@ -1,0 +1,186 @@
+openapi: 3.0.0
+info:
+  title: Todo API Express
+  version: 1.0.0
+  description: Interactive documentation for the Todo API
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+components:
+  schemas:
+    Todo:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Buy groceries"
+        description:
+          type: string
+          nullable: true
+          example: "Get milk and bread for the week"
+        status:
+          type: string
+          example: "pending"
+
+paths:
+  /:
+    get:
+      summary: API Root / Welcome Message
+      tags: [General]
+      responses:
+        "200":
+          description: Welcome message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Welcome to the Enhanced Express Todo App!"
+  /todos:
+    get:
+      summary: List all Todos (with pagination)
+      tags: [Todos]
+      parameters:
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            default: 0
+          description: Number of items to skip
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Maximum number of items to return
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+    post:
+      summary: Create a new Todo
+      tags: [Todos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                  default: pending
+      responses:
+        "201":
+          description: Todo created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "422":
+          description: Validation error (title is required)
+
+  /todos/search/all:
+    get:
+      summary: Search Todos by title keyword
+      tags: [Todos]
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+            default: ""
+          description: The search keyword
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Todo"
+
+  /todos/{id}:
+    get:
+      summary: Get a specific Todo by ID
+      tags: [Todos]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The unique identifier of the Todo
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "404":
+          description: Todo not found
+    put:
+      summary: Update an existing Todo
+      tags: [Todos]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The unique identifier of the Todo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+      responses:
+        "200":
+          description: Todo updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "404":
+          description: Todo not found
+    delete:
+      summary: Delete a specific Todo
+      tags: [Todos]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The unique identifier of the Todo
+      responses:
+        "200":
+          description: Todo deleted successfully
+        "404":
+          description: Todo not found
