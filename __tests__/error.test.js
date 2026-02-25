@@ -1,13 +1,10 @@
 const request = require("supertest");
 
-// --- MOCK DATABASE ---
 jest.mock("../database/database", () => ({
   getDb: jest.fn().mockRejectedValue(new Error("Erreur DB simulée")),
   saveDb: jest.fn(),
 }));
 
-// --- MOCK SWAGGER ---
-// (Valide les lignes du catch Swagger dans app.js)
 jest.mock("yamljs", () => ({
   load: jest.fn(() => {
     throw new Error("Erreur Swagger simulée");
@@ -53,8 +50,6 @@ describe("Tests de robustesse globaux (Catch blocks de app.js)", () => {
   let originalJson;
 
   beforeAll(() => {
-    // Sabotage propre : on détruit temporairement la méthode json() d'Express
-    // Cela garantit que TOUTES les routes qui renvoient du json vont crasher en essayant
     originalJson = app.response.json;
     app.response.json = () => {
       throw new Error("Crash forcé de Express JSON");
@@ -62,23 +57,15 @@ describe("Tests de robustesse globaux (Catch blocks de app.js)", () => {
   });
 
   afterAll(() => {
-    // On remet la vraie fonction
     app.response.json = originalJson;
   });
 
   it("GET / - devrait tomber dans le catch et renvoyer 500", async () => {
-    // La route "/" essaie de faire res.json({ message: "..." }), ce qui va crasher !
-    // Elle tombe dans le catch, appelle handleAppRouteError qui fait status(500)
     const res = await request(app).get("/");
     expect(res.statusCode).toBe(500);
-
-    // Note : On ne teste pas res.body.detail ici car on a cassé res.json exprès,
-    // donc handleAppRouteError va aussi crasher en essayant de renvoyer l'erreur !
-    // L'important est que le code soit passé par les bonnes lignes (le coverage).
   });
 
   it("GET /debug - devrait tomber dans le catch et renvoyer 500", async () => {
-    // La route "/debug" en NODE_ENV=test essaie de faire res.status(404).json(...), ce qui crashe.
     const res = await request(app).get("/debug");
     expect(res.statusCode).toBe(500);
   });
