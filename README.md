@@ -15,6 +15,7 @@ Cette documentation et les badges sont prêts — certains badges (build, covera
 ## Démarrage rapide
 
 Prérequis:
+
 - Node.js (>= 16)
 
 Installation:
@@ -86,6 +87,7 @@ Consultez `docs/swagger.yml` et `api/index.js` pour la documentation OpenAPI/Swa
 Project: `todo-api-node` — auteur: dépôt GitHub `Christmann-Julian/todo-api-node`.
 
 Pour toute question ou amélioration, ouvrez une issue dans le dépôt.
+
 # Todo API
 
 Une API REST simple pour gérer des TODOs, construite avec Express et une base SQL embarquée.
@@ -97,6 +99,7 @@ Cette documentation et les badges sont prêts — certains badges (build, covera
 ## Démarrage rapide
 
 Prérequis:
+
 - Node.js (>= 16)
 
 Installation:

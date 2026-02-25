@@ -18,6 +18,12 @@ describe("Tests Fonctionnels de l'API Todo", () => {
 
   let createdTodoId;
 
+  it("GET /health - devrait retourner le statut ok", async () => {
+    const res = await request(app).get("/health");
+    expect(res.statusCode).toBe(200);
+    expect(res.body.status).toBe("ok");
+  });
+
   it("GET / - devrait retourner le message de bienvenue", async () => {
     const res = await request(app).get("/");
     expect(res.statusCode).toBe(200);

@@ -9,6 +9,17 @@ const { formatTodo, formatTodos, toArray } = require("./utils");
 const router = Router();
 
 /**
+ * Route d'erreur 500 pour les routes Todo.
+ * @param {import('express').Response} res - La réponse Express
+ * @param {unknown} error - L'erreur capturée dans la route
+ * @returns {import('express').Response} Réponse HTTP 500 standardisée
+ */
+function handleRouteError(res, error) {
+  console.error("Todo route error:", error);
+  return res.status(500).json({ detail: "Internal server error" });
+}
+
+/**
  * Crée un nouveau Todo.
  * @name POST /todos
  * @param {import('express').Request} req - La requête Express
@@ -19,23 +30,27 @@ const router = Router();
  * @returns {Object} Le Todo formaté avec son nouvel ID (Statut 201) ou une erreur 422
  */
 router.post("/", async (req, res) => {
-  const { title, description = null, status = "pending" } = req.body;
-  if (!title) {
-    return res.status(422).json({ detail: "title is required" });
-  }
-  console.log("creating todo: " + title);
-  const db = await getDb();
-  db.run("INSERT INTO todos (title, description, status) VALUES (?, ?, ?)", [
-    title,
-    description,
-    status,
-  ]);
-  const id = db.exec("SELECT last_insert_rowid() as id")[0].values[0][0];
-  const row = db.exec("SELECT * FROM todos WHERE id = ?", [id]);
-  saveDb();
+  try {
+    const { title, description = null, status = "pending" } = req.body;
+    if (!title) {
+      return res.status(422).json({ detail: "title is required" });
+    }
+    console.log("creating todo: " + title);
+    const db = await getDb();
+    db.run("INSERT INTO todos (title, description, status) VALUES (?, ?, ?)", [
+      title,
+      description,
+      status,
+    ]);
+    const id = db.exec("SELECT last_insert_rowid() as id")[0].values[0][0];
+    const row = db.exec("SELECT * FROM todos WHERE id = ?", [id]);
+    saveDb();
 
-  const todo = toObj(row);
-  res.status(201).json(formatTodo(todo));
+    const todo = toObj(row);
+    res.status(201).json(formatTodo(todo));
+  } catch (error) {
+    return handleRouteError(res, error);
+  }
 });
 
 /**
@@ -48,15 +63,19 @@ router.post("/", async (req, res) => {
  * @returns {Array<Object>} Un tableau de Todos formatés
  */
 router.get("/", async (req, res) => {
-  const skip = parseInt(req.query.skip) || 0;
-  const limit = parseInt(req.query.limit) || 10;
-  const db = await getDb();
-  const rows = db.exec("SELECT * FROM todos LIMIT ? OFFSET ?", [limit, skip]);
+  try {
+    const skip = parseInt(req.query.skip) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const db = await getDb();
+    const rows = db.exec("SELECT * FROM todos LIMIT ? OFFSET ?", [limit, skip]);
 
-  const x = toArray(rows);
-  console.log("found " + x.length + " todos");
+    const x = toArray(rows);
+    console.log("found " + x.length + " todos");
 
-  res.json(formatTodos(x));
+    res.json(formatTodos(x));
+  } catch (error) {
+    return handleRouteError(res, error);
+  }
 });
 
 /**
@@ -68,12 +87,16 @@ router.get("/", async (req, res) => {
  * @returns {Object} Le Todo formaté ou une erreur 404 s'il est introuvable
  */
 router.get("/:id", async (req, res) => {
-  const db = await getDb();
-  const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
-  if (!rows.length || !rows[0].values.length)
-    return res.status(404).json({ detail: "Todo not found" });
+  try {
+    const db = await getDb();
+    const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
+    if (!rows.length || !rows[0].values.length)
+      return res.status(404).json({ detail: "Todo not found" });
 
-  res.json(formatTodo(toObj(rows)));
+    res.json(formatTodo(toObj(rows)));
+  } catch (error) {
+    return handleRouteError(res, error);
+  }
 });
 
 /**
@@ -88,26 +111,30 @@ router.get("/:id", async (req, res) => {
  * @returns {Object} Le Todo mis à jour et formaté ou une erreur 404
  */
 router.put("/:id", async (req, res) => {
-  const db = await getDb();
-  const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
-  if (!existing.length || !existing[0].values.length)
-    return res.status(404).json({ detail: "Todo not found" });
+  try {
+    const db = await getDb();
+    const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
+    if (!existing.length || !existing[0].values.length)
+      return res.status(404).json({ detail: "Todo not found" });
 
-  const old = toObj(existing);
-  const title = req.body.title ?? old.title;
-  const description = req.body.description ?? old.description;
-  const status = req.body.status ?? old.status;
+    const old = toObj(existing);
+    const title = req.body.title ?? old.title;
+    const description = req.body.description ?? old.description;
+    const status = req.body.status ?? old.status;
 
-  db.run("UPDATE todos SET title = ?, description = ?, status = ? WHERE id = ?", [
-    title,
-    description,
-    status,
-    req.params.id,
-  ]);
-  const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
-  saveDb();
+    db.run("UPDATE todos SET title = ?, description = ?, status = ? WHERE id = ?", [
+      title,
+      description,
+      status,
+      req.params.id,
+    ]);
+    const rows = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
+    saveDb();
 
-  res.json(formatTodo(toObj(rows)));
+    res.json(formatTodo(toObj(rows)));
+  } catch (error) {
+    return handleRouteError(res, error);
+  }
 });
 
 /**
@@ -119,13 +146,17 @@ router.put("/:id", async (req, res) => {
  * @returns {Object} Un message de confirmation ou une erreur 404
  */
 router.delete("/:id", async (req, res) => {
-  const db = await getDb();
-  const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
-  if (!existing.length || !existing[0].values.length)
-    return res.status(404).json({ detail: "Todo not found" });
-  db.run("DELETE FROM todos WHERE id = ?", [req.params.id]);
-  saveDb();
-  res.json({ detail: "Todo deleted" });
+  try {
+    const db = await getDb();
+    const existing = db.exec("SELECT * FROM todos WHERE id = ?", [req.params.id]);
+    if (!existing.length || !existing[0].values.length)
+      return res.status(404).json({ detail: "Todo not found" });
+    db.run("DELETE FROM todos WHERE id = ?", [req.params.id]);
+    saveDb();
+    res.json({ detail: "Todo deleted" });
+  } catch (error) {
+    return handleRouteError(res, error);
+  }
 });
 
 /**
@@ -137,11 +168,15 @@ router.delete("/:id", async (req, res) => {
  * @returns {Array<Object>} Un tableau de Todos correspondants à la recherche
  */
 router.get("/search/all", async (req, res) => {
-  const q = req.query.q || "";
-  const db = await getDb();
-  const results = db.exec("SELECT * FROM todos WHERE title LIKE ?", [`%${q}%`]);
+  try {
+    const q = req.query.q || "";
+    const db = await getDb();
+    const results = db.exec("SELECT * FROM todos WHERE title LIKE ?", [`%${q}%`]);
 
-  res.json(formatTodos(toArray(results)));
+    res.json(formatTodos(toArray(results)));
+  } catch (error) {
+    return handleRouteError(res, error);
+  }
 });
 
 /**
