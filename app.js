@@ -15,6 +15,17 @@ const app = express();
 app.use(express.json());
 
 /**
+ * Réponse d'erreur 500 standardisée pour les routes de l'application.
+ * @param {import('express').Response} res - La réponse Express
+ * @param {unknown} error - L'erreur capturée
+ * @returns {import('express').Response} Réponse HTTP 500
+ */
+function handleAppRouteError(res, error) {
+  console.error("App route error:", error);
+  return res.status(500).json({ detail: "Internal server error" });
+}
+
+/**
  * Route racine de l'API.
  * @name GET /
  * @param {import('express').Request} _req - La requête Express (non utilisée)
@@ -22,8 +33,12 @@ app.use(express.json());
  * @returns {Object} Message de bienvenue
  */
 app.get("/", (_req, res) => {
-  console.log("someone hit the root endpoint");
-  res.json({ message: "Welcome to the Enhanced Express Todo App!" });
+  try {
+    console.log("someone hit the root endpoint");
+    res.json({ message: "Welcome to the Enhanced Express Todo App!" });
+  } catch (error) {
+    return handleAppRouteError(res, error);
+  }
 });
 
 /**
@@ -56,15 +71,30 @@ try {
  * @returns {Object} JSON contenant le secret, l'API key et l'environnement, ou une erreur 404
  */
 app.get("/debug", (_req, res) => {
-  if (process.env.NODE_ENV !== "development") {
-    return res.status(404).json({ error: "Not found" });
-  }
+  try {
+    if (process.env.NODE_ENV !== "development") {
+      return res.status(404).json({ error: "Not found" });
+    }
 
-  res.json({
-    secret: process.env.SECRET_KEY,
-    api_key: process.env.API_KEY,
-    env: process.env,
-  });
+    res.json({
+      secret: process.env.SECRET_KEY,
+      api_key: process.env.API_KEY,
+      env: process.env,
+    });
+  } catch (error) {
+    return handleAppRouteError(res, error);
+  }
+});
+
+/**
+ * Route de santé de l'API.
+ * @name GET /health
+ * @param {import('express').Request} _req - La requête Express
+ * @param {import('express').Response} res - La réponse Express
+ * @returns {Object} JSON indiquant que le service est opérationnel
+ */
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
 });
 
 /**
