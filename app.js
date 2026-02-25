@@ -2,6 +2,7 @@ if (process.env.VERCEL !== "1") {
   require("dotenv").config();
 }
 const express = require("express");
+const path = require("path");
 const todoRouter = require("./routes/todo");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
@@ -28,8 +29,23 @@ app.get("/", (_req, res) => {
 /**
  * Configuration de Swagger UI pour la documentation de l'API.
  */
-const swaggerDocument = YAML.load("./docs/swagger.yml");
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+try {
+  const swaggerPath = path.join(__dirname, "docs", "swagger.yml");
+  const swaggerDocument = YAML.load(swaggerPath);
+
+  // Options pour forcer le chargement du design via CDN (Vercel)
+  const swaggerOptions = {
+    customCssUrl: "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui.css",
+    customJs: [
+      "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-bundle.js",
+      "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js",
+    ],
+  };
+
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerOptions));
+} catch (error) {
+  console.error("Impossible de charger la documentation Swagger :", error.message);
+}
 
 /**
  * Route de débogage pour afficher les variables d'environnement.
