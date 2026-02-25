@@ -4,6 +4,7 @@
   "description": "a todo api",
   "main": "app.js",
   "scripts": {
+    "release": "standard-version",
     "start": "node app.js",
     "dev": "node --watch app.js",
     "format": "prettier --write .",
