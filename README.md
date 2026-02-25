@@ -3,7 +3,7 @@
 ![Release](https://img.shields.io/github/v/release/Christmann-Julian/todo-api-node)
 ![Build](https://img.shields.io/github/actions/workflow/status/Christmann-Julian/todo-api-node/ci.yml?branch=develop)
 ![Tests](https://img.shields.io/badge/tests-jest%20%2B%20supertest-blue)
-![Coverage](https://img.shields.io/badge/coverage-unknown-lightgrey)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Christmann-Julian_todo-api-node&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Christmann-Julian_todo-api-node)
 ![Node.js](https://img.shields.io/badge/node-%3E%3D16-brightgreen)
 
 Une API REST simple pour gérer des TODOs, construite avec Express et une base SQL embarquée.
