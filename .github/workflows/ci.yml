@@ -91,3 +91,50 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  notify-discord:
+    name: Notify Discord
+    runs-on: ubuntu-latest
+    needs: [docker-build-and-test, publish-ghcr, sonarcloud-scan]
+    if: always()
+
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          STATUS_TEST: ${{ needs.docker-build-and-test.result }}
+          STATUS_GHCR: ${{ needs.publish-ghcr.result }}
+          STATUS_SONAR: ${{ needs.sonarcloud-scan.result }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL secret is missing"
+            exit 1
+          fi
+
+          # Global status: fail if any dependency failed
+          if [ "$STATUS_TEST" != "success" ] || [ "$STATUS_SONAR" != "success" ]; then
+            EMOJI="❌"
+            TITLE="CI failed"
+          else
+            EMOJI="✅"
+            TITLE="CI passed"
+          fi
+
+          # publish-ghcr is skipped on PR, so treat skipped as ok
+          if [ "$STATUS_GHCR" = "failure" ]; then
+            EMOJI="❌"
+            TITLE="CI failed"
+          fi
+
+          payload=$(cat <<EOF
+          {
+            "content": "$EMOJI **$TITLE** — \`$REPO\` on **$REF**\n• Tests: **$STATUS_TEST**\n• GHCR: **$STATUS_GHCR**\n• Sonar: **$STATUS_SONAR**\n• Commit: \`${SHA:0:7}\`\n$RUN_URL"
+          }
+          EOF
+          )
+
+          curl -sS -X POST -H "Content-Type: application/json" \
+            -d "$payload" "$DISCORD_WEBHOOK_URL"
