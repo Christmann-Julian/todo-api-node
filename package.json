@@ -9,6 +9,7 @@
     "dev": "node --watch app.js",
     "format": "prettier --write .",
     "lint": "eslint .",
+    "openapi:lint": "redocly lint docs/swagger.yml",
     "test": "NODE_ENV=test jest --coverage"
   },
   "dependencies": {
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@redocly/cli": "^2.19.2",
     "eslint": "^10.0.1",
     "eslint-config-prettier": "^10.0.1",
     "globals": "^17.3.0",
