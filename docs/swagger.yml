@@ -3,6 +3,7 @@ info:
   title: Todo API Express
   version: 1.0.0
   description: Interactive documentation for the Todo API
+security: []
 servers:
   - url: http://localhost:3000
     description: Development server
