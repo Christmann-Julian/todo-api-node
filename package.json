@@ -33,7 +33,8 @@
   "overrides": {
     "glob": "^11.0.0",
     "minimatch": "^10.2.1",
-    "braces": "^3.0.3"
+    "braces": "^3.0.3",
+    "js-yaml": "^4.1.0"
   },
   "jest": {
     "coverageProvider": "v8",
