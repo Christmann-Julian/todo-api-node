@@ -6,6 +6,8 @@ const path = require("path");
 const todoRouter = require("./routes/todo");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
+const pinoHttp = require("pino-http");
+const logger = require("./logger");
 
 /**
  * Instance principale de l'application Express.
@@ -13,6 +15,15 @@ const YAML = require("yamljs");
  */
 const app = express();
 app.use(express.json());
+
+/**
+ * Middleware de journalisation HTTP utilisant Pino.
+ */
+app.use(
+  pinoHttp({
+    logger,
+  })
+);
 
 /**
  * Réponse d'erreur 500 standardisée pour les routes de l'application.
@@ -103,8 +114,8 @@ app.get("/health", (_req, res) => {
  */
 app.use("/todos", todoRouter);
 
-/* istanbul ignore next */
 if (process.env.NODE_ENV !== "test" && process.env.VERCEL !== "1") {
+  /* istanbul ignore next */
   app.listen(process.env.PORT || 3000, () =>
     console.log(`Server running on http://localhost:${process.env.PORT || 3000}`)
   );
