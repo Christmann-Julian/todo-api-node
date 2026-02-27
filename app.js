@@ -114,8 +114,8 @@ app.get("/health", (_req, res) => {
  */
 app.use("/todos", todoRouter);
 
-/* istanbul ignore next */
 if (process.env.NODE_ENV !== "test" && process.env.VERCEL !== "1") {
+  /* istanbul ignore next */
   app.listen(process.env.PORT || 3000, () =>
     console.log(`Server running on http://localhost:${process.env.PORT || 3000}`)
   );

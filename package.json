@@ -54,6 +54,7 @@
       "routes/*.js",
       "utils/*.js",
       "app.js",
+      "logger.js",
       "!**/node_modules/**"
     ]
   }
